@@ -1,6 +1,18 @@
+/**
+ * @Author: Log1c
+ * @Description:
+ * @File:  main
+ * @Version: 1.0.0
+ * @Date: 2022/4/18 22:33
+ */
+
 package main
 
 import (
+	"bufio"
+	"fmt"
+	"io"
+	"os"
 	"runtime"
 	"time"
 )
@@ -10,8 +22,11 @@ type Benchmark struct {
 	N int
 }
 
+
 func main() {
-	cacheSize := []int{1e3, 10e3, 100e3, 1e6}
+
+	//cacheSize := []int{1e3, 10e3, 100e3, 1e6}
+	cacheSize := []int{256, 512, 1000, 10000}
 	multiplier := []int{10, 100, 1000}
 	newCache := []NewCacheFunc{
 		NewTinyLFU,
@@ -82,8 +97,43 @@ func run(newGen NewGeneratorFunc, cacheSize, numKey int, newCache NewCacheFunc) 
 }
 
 func bench(b *Benchmark, cache Cache) (hits, misses int) {
+
+	chan1 := make(chan string, 5)
+
+	go func() {
+		fi, err := os.Open("/Users/log1c/Code/Golang/go-cache-benchmark/log1ctest/from_to.txt")
+
+		if err != nil {
+			fmt.Printf("Error: %s\n", err)
+			return
+		}
+		defer fi.Close()
+
+		br := bufio.NewReader(fi)
+		i:=0
+		for {
+			a, _, c := br.ReadLine()
+			if c == io.EOF {
+				break
+			}
+			if i==0{
+				// 过滤第一行 from，to
+				i++
+				continue
+			}
+			s1 := a[:42]
+			s2:= a[43:]
+			//fmt.Println(s1)
+			//fmt.Println(s2)
+			chan1 <- string(s1)
+			chan1 <- string(s2)
+
+		}
+	}()
+
 	for i := 0; i < b.N; i++ {
-		value := b.Next()
+		//value := b.Next()
+		value := <- chan1
 		if cache.Get(value) {
 			hits++
 		} else {
@@ -101,3 +151,4 @@ func memAlloc() uint64 {
 	runtime.ReadMemStats(&m)
 	return m.Alloc
 }
+

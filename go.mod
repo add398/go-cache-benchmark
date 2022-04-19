@@ -3,6 +3,7 @@ module go-cache-benchmark
 go 1.16
 
 require (
+	github.com/bluele/gcache v0.0.2 // indirect
 	github.com/dgraph-io/ristretto v0.0.3
 	github.com/dgryski/go-clockpro v0.0.0-20140817124034-edc6d3eeb96e
 	github.com/dgryski/go-metro v0.0.0-20200812162917-85c65e2d0165 // indirect
